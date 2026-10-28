@@ -5,7 +5,7 @@
 Shi Li, Lalith Sharan, Joël L. Lavanchy, Kun Yuan, Lorenzo Arboit, Nabani Banik, Elif Yazici, Maria Vannucci,
 Vinkle Srivastav, Pietro Mascagni, Nicolas Padoy
 
-[Project page](https://camma-public.github.io/endocomparer/) · Paper (soon) · [Dataset](https://huggingface.co/datasets/ethanshili/EndoDiffVQA) · Models (soon)
+[Project page](https://camma-public.github.io/endocomparer/) · Paper (soon) · Dataset (soon) · Models (soon)
 
 Surgical assessment is comparative, but vision-language models see one video at a time. This repository holds
 
@@ -18,7 +18,7 @@ Surgical assessment is comparative, but vision-language models see one video at 
 
 | Component | Status |
 |---|---|
-| EndoDiffVQA data (Hugging Face, gated) | published |
+| EndoDiffVQA data | to be released |
 | Evaluation harness and metrics (`endodiffvqa/`) | to be released |
 | EndoComparer model, training and inference (`endocomparer/`) | to be released |
 | Checkpoints | to be released |
