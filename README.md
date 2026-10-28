@@ -27,7 +27,7 @@ Surgical assessment is comparative, but vision-language models see one video at 
 
 ```
 .
-├── docs/            # project page, served by GitHub Pages from main:/docs (static HTML, no build step)
+├── docs/            # project page (static HTML, no build step), deployed by .github/workflows/pages.yml
 ├── endodiffvqa/     # benchmark: release loader, Detect / Specify / Strict metrics, swap control
 ├── endocomparer/    # model: Pseudo-Siamese Visual LoRA, Perceive-then-Compare targets, training, inference
 ├── configs/         # training / evaluation configs
