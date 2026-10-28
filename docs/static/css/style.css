@@ -208,7 +208,9 @@ td b { font-weight: 700; }
 td .dag { color: var(--fg-faint); font-size: .8em; vertical-align: super; }
 th.sep, td.sep { border-left: 1px solid var(--line-strong); }
 .table-note { font-size: .85rem; color: var(--fg-muted); margin-top: 10px; line-height: 1.5; }
-table.templates td { white-space: normal; }
+table.templates td, table.wrapcells td { white-space: normal; }
+table.compact th, table.compact td { padding: 7px 8px; }
+table.compact thead tr:last-child th { white-space: normal; max-width: 86px; line-height: 1.25; vertical-align: bottom; }
 table.templates td:first-child { font-family: var(--mono); font-size: .85em; }
 
 /* ---------- metric cards ---------- */
