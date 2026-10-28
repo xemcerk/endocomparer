@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EndoComparer</title>
+<meta name="description" content="EndoComparer: comparative surgical video question answering with Pseudo-Siamese Visual LoRA and Perceive-then-Compare reasoning, and EndoDiffVQA, a benchmark of 10,939 two-video multiple-choice questions over cholecystectomy and gastric bypass.">
+<meta property="og:title" content="EndoComparer: Comparative Surgical Video Question Answering">
+<meta property="og:description" content="A VLM that keeps two surgical videos apart in the visual encoder and in the reasoning, and EndoDiffVQA, the first comparative surgical video QA benchmark.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="static/images/model.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='7' width='13' height='18' rx='3' fill='%234a7fc1'/%3E%3Crect x='17' y='7' width='13' height='18' rx='3' fill='%23d9a53d'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<nav class="nav" aria-label="Page sections">
+  <div class="wrap">
+    <a class="brand" href="#top">Endo<span>Comparer</span></a>
+    <ul>
+      <li><a href="#task">Task</a></li>
+      <li><a href="#benchmark">Benchmark</a></li>
+      <li><a href="#metrics">Metrics</a></li>
+      <li><a href="#model">Model</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#release">Release</a></li>
+      <li><a href="#bibtex">Cite</a></li>
+    </ul>
+    <button class="theme" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle light / dark">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <h1>EndoComparer
+      <small>Comparative Surgical Video Question Answering with Pseudo-Siamese Visual Adaptation and Perceive-then-Compare Reasoning</small>
+    </h1>
+
+    <div class="authors">
+      <span>Shi Li<sup>1,2,*</sup></span>, <span>Lalith Sharan<sup>1,2</sup></span>, <span>Joël L. Lavanchy<sup>3,4</sup></span>,
+      <span>Kun Yuan<sup>1,2</sup></span>, <span>Lorenzo Arboit<sup>1,2</sup></span>, <span>Nabani Banik<sup>1,2</sup></span>,
+      <span>Elif Yazici<sup>1,2</sup></span>, <span>Maria Vannucci<sup>2,5</sup></span>, <span>Vinkle Srivastav<sup>1,2</sup></span>,
+      <span>Pietro Mascagni<sup>1,2,6</sup></span>, <span>Nicolas Padoy<sup>1,2</sup></span>
+    </div>
+    <div class="affils">
+      <sup>1</sup>ICube, UMR7357, University of Strasbourg, CNRS, INSERM, France &nbsp;·&nbsp;
+      <sup>2</sup>Institute of Image-Guided Surgery, IHU Strasbourg, France &nbsp;·&nbsp;
+      <sup>3</sup>University Digestive Health Care Center – Clarunis, Basel, Switzerland &nbsp;·&nbsp;
+      <sup>4</sup>Department of Biomedical Engineering, University of Basel, Switzerland &nbsp;·&nbsp;
+      <sup>5</sup>General Surgery Department, University of Turin, Italy &nbsp;·&nbsp;
+      <sup>6</sup>Fondazione Policlinico Universitario Agostino Gemelli IRCCS, Rome, Italy
+      <br><span class="small"><sup>*</sup>Corresponding author: shi.li@unistra.fr</span>
+    </div>
+
+    <div class="links">
+      <a class="btn soon" href="#" aria-disabled="true" title="Paper link will appear here">
+        <svg viewBox="0 0 24 24"><path d="M6 2h8l6 6v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V9h5.5L13 3.5zM8 13h8v1.5H8V13zm0 3.5h8V18H8v-1.5z"/></svg>
+        Paper
+      </a>
+      <a class="btn soon" href="#" aria-disabled="true" title="arXiv link will appear here">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16v2H4V4zm0 14h16v2H4v-2zm2-9h12l-3 4 3 4H6l3-4-3-4z"/></svg>
+        arXiv
+      </a>
+      <a class="btn" href="https://github.com/CAMMA-public/endocomparer">
+        <svg viewBox="0 0 24 24"><path d="M12 .5A11.5 11.5 0 0 0 .5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.17c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>
+        Code
+      </a>
+      <a class="btn" href="https://huggingface.co/datasets/ethanshili/EndoDiffVQA">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v4H3V5a1 1 0 0 1 1-1zm-1 7h18v4H3v-4zm0 6h18v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2z"/></svg>
+        Dataset
+      </a>
+      <a class="btn soon" href="#" aria-disabled="true" title="Model weights will appear here">
+        <svg viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7l9-5zm0 2.3L5 8.1v7.8l7 3.8 7-3.8V8.1l-7-3.8z"/></svg>
+        Models
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============================================================ abstract -->
+<section id="abstract">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Abstract</div>
+      <p class="lede">Surgical assessment is comparative: surgeons judge a case against others, trainees against experts.
+        Vision-language models, however, are trained and evaluated on single videos.</p>
+    </div>
+    <p>Comparing two surgical videos requires perceiving each video separately and binding every observation to the
+      right video, and current VLMs often confuse which video shows what. We propose <b>EndoComparer</b>, a VLM for
+      comparative surgical video question answering with two components. <b>Pseudo-Siamese Visual LoRA</b> gives each
+      video slot its own low-rank adapter over a shared frozen vision encoder, separating the two videos in the visual
+      pathway at the cost of a single encoder pass. <b>Perceive-then-Compare reasoning</b> trains the model to first
+      state what each video shows, then derive the answer from these statements.</p>
+    <p>We also build <b>EndoDiffVQA</b>, a benchmark of 10,939 two-video multiple-choice questions over cholecystectomy
+      and gastric bypass, covering anatomy, tool, action and skill, with every answer stated by the source clip captions
+      or expert skill scores. EndoComparer outperforms strong generalist and surgical VLMs across all question
+      categories. Ablations show that both components contribute, and the model answers more consistently when the two
+      videos are swapped.</p>
+
+    <div class="grid four" style="margin-top:26px">
+      <div class="card"><div class="n">10,939</div><p class="muted small">two-video, four-option questions over 1,762 videos</p></div>
+      <div class="card"><div class="n">4<small>subsets</small></div><p class="muted small">captions and skill scores × cholecystectomy and gastric bypass</p></div>
+      <div class="card"><div class="n">52.5<small>Strict</small></div><p class="muted small">EndoComparer on the test split, +4.2 over its fine-tuned backbone</p></div>
+      <div class="card"><div class="n">−0.6<small>swap Δ</small></div><p class="muted small">Strict drop when the videos are exchanged, vs −5.8 for the backbone</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ task -->
+<section id="task">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">The task</div>
+      <h2>Comparison is not single-video understanding done twice</h2>
+      <p class="lede">Each item shows two clips of the same procedure and phase from different cases and asks whether
+        they agree on one attribute and, if not, which video shows what. Every option opens with a verdict, then states
+        what each video shows, so a model has to decide both.</p>
+    </div>
+
+    <div class="example" id="example">
+      <div class="head">
+        <span class="tag">Chole-Skill-DQA</span>
+        <span class="tag">template S1</span>
+        <span class="tag">test</span>
+        <div class="q">Is the cystic artery dissected to the same standard in both videos?</div>
+      </div>
+      <div class="strips">
+        <div class="strip v1">
+          <div class="label"><i></i><span>Video 1</span></div>
+          <div class="frames">
+            <img src="static/images/examples/video1_f0231.jpg" alt="Video 1, frame at 231 s" loading="lazy">
+            <img src="static/images/examples/video1_f0238.jpg" alt="Video 1, frame at 238 s" loading="lazy">
+            <img src="static/images/examples/video1_f0260.jpg" alt="Video 1, frame at 260 s" loading="lazy">
+            <img src="static/images/examples/video1_f0286.jpg" alt="Video 1, frame at 286 s" loading="lazy">
+          </div>
+        </div>
+        <div class="strip v2">
+          <div class="label"><i></i><span>Video 2</span></div>
+          <div class="frames">
+            <img src="static/images/examples/video2_f0756.jpg" alt="Video 2, frame at 756 s" loading="lazy">
+            <img src="static/images/examples/video2_f0777.jpg" alt="Video 2, frame at 777 s" loading="lazy">
+            <img src="static/images/examples/video2_f2405.jpg" alt="Video 2, frame at 2405 s" loading="lazy">
+            <img src="static/images/examples/video2_f3502.jpg" alt="Video 2, frame at 3502 s" loading="lazy">
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <ul class="options" aria-label="Answer options">
+          <li class="correct" data-role="swap" data-swap-correct="0"><b>(a)</b><span>No — clearly better in Video 1</span><span class="why">correct</span></li>
+          <li data-role="substitute" data-swap-correct="0"><b>(b)</b><span>No — slightly better in Video 2</span><span class="why">substitute</span></li>
+          <li data-role="swap" data-swap-correct="1"><b>(c)</b><span>No — clearly better in Video 2</span><span class="why">swap</span></li>
+          <li data-role="collapse" data-swap-correct="0"><b>(d)</b><span>Yes — to the same standard in both videos</span><span class="why">collapse</span></li>
+        </ul>
+        <div class="answer">
+          <div class="lbl">EndoComparer response (Perceive-then-Compare)</div>
+          <div class="line" data-swapped="<span class='h1'>Video 1:</span> score 1. <span class='h2'>Video 2:</span> score 3. <span class='y'>(c)</span>">
+            <span class="h1">Video 1:</span> score 3. <span class="h2">Video 2:</span> score 1. <span class="y">(a)</span>
+          </div>
+          <p class="small muted" style="margin:10px 0 0">The two perception statements are supervised by the expert
+            scores the item was built from; the letter is a deterministic comparison of the two statements.</p>
+        </div>
+      </div>
+      <div class="foot">
+        <span id="swap-state">Release order. Press swap to see how the swap control re-labels the item.</span>
+        <button class="swapbtn" id="swap-btn" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h13l-3-3M17 17H4l3 3"/></svg>
+          <span>Swap Video 1 ↔ Video 2</span>
+        </button>
+      </div>
+    </div>
+    <p class="table-note">Frames: four of the 64 uniformly sampled frames per phase-level clip used at evaluation.
+      Distractors are named errors: <b>swap</b> puts the correct facts on the wrong videos, <b>collapse</b> flips the
+      verdict, <b>substitute</b> keeps the direction but changes the magnitude, and <b>absent</b> (caption lane) names a
+      value neither video shows.</p>
+
+    <div class="callout">
+      <p><b>Why it is hard.</b> The model must perceive each video, keep the two sets of observations apart and bind
+        every fact to the video it came from. In surgery the two videos show the same procedure, phase and instruments,
+        so confusing which video shows what is both likely and hard to notice. Multiple-choice evaluation adds a trap:
+        a model that always answers “the same” is rewarded whenever differences are rare.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ benchmark -->
+<section id="benchmark">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">EndoDiffVQA</div>
+      <h2>A benchmark built from captions and expert skill scores</h2>
+      <p class="lede">One formulation handles both kinds of annotation: a fact extractor reads a per-clip fact for one
+        attribute, a deterministic rule turns the two facts into a relation between the videos, and a template renders
+        the relation into a stem, four options and the correct letter.</p>
+    </div>
+
+    <figure class="figure">
+      <div class="frame"><img src="static/images/pipeline.png" alt="The four-stage EndoDiffVQA construction pipeline: clips and annotations, per-video fact extraction, pairing and relation building, QA construction and audit."></div>
+      <figcaption><b>Construction pipeline.</b> Clips and annotations from CholecT50, MultiBypass140 and CholeScore;
+        per-video facts extracted with a fixed slot schema (captions) or taken directly from the expert score (skill);
+        pairing within split, procedure and phase across cases; templated QA with named distractors and a clinician audit.</figcaption>
+    </figure>
+
+    <div class="steps">
+      <div class="step"><h4>Clips and annotations</h4><p>Captions describe single-scene clips of seconds to tens of
+        seconds (Anatomy, Tool, Action). Skill scores rate phase-level clips of tens of minutes with OSATS-style
+        criteria (CholeScore) and GOALS domains (MultiBypass140).</p></div>
+      <div class="step"><h4>Per-video facts</h4><p>For captions, Qwen3.8-27B fills a schema with one slot per attribute,
+        followed by synonym folding, value regularisation and removal of tool numbering. For skill, the expert score
+        is the fact.</p></div>
+      <div class="step"><h4>Pairing and relations</h4><p>Split by case first. Two clips pair only if they share procedure
+        and phase and come from different cases. The relation is one of <i>same</i>, <i>different</i>, <i>only 1</i>,
+        <i>only 2</i>, <i>neither</i>; for skill, the sign of the score difference.</p></div>
+      <div class="step"><h4>QA and audit</h4><p>13 templates render each relation into a stem and four options. Keys whose
+        candidates fall over 85 % into one answer cell are dropped, and the correct letter is uniform over a–d per split
+        and template. Every recurring audit error became a hard rule each build must pass.</p></div>
+    </div>
+
+    <h3>Four subsets, two procedures</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Subset</th><th>Procedure</th><th>Source annotation</th><th>Questions</th><th>Clip length</th></tr></thead>
+        <tbody>
+          <tr><td><b>Chole-Cap-DQA</b></td><td>Laparoscopic cholecystectomy</td><td>CholecT50 scene captions</td><td>Anatomy · Tool · Action</td><td>seconds to tens of seconds</td></tr>
+          <tr><td><b>LRYGB-Cap-DQA</b></td><td>Roux-en-Y gastric bypass</td><td>MultiBypass140 scene captions</td><td>Anatomy · Tool · Action</td><td>seconds to tens of seconds</td></tr>
+          <tr><td><b>Chole-Skill-DQA</b></td><td>Laparoscopic cholecystectomy</td><td>CholeScore OSATS-style criteria (1–5)</td><td>Skill</td><td>tens of minutes</td></tr>
+          <tr><td><b>LRYGB-Skill-DQA</b></td><td>Roux-en-Y gastric bypass</td><td>MultiBypass140 GOALS domains</td><td>Skill</td><td>tens of minutes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="figure">
+      <div class="frame"><img src="static/images/stats.png" alt="Donut charts of items per category and attribute: 10,939 items; Anatomy 3,326; Tool 3,241; Action 1,683; Skill 2,689."></div>
+      <figcaption><b>Release statistics.</b> 10,939 items over 1,762 videos, split 7,289 / 1,350 / 2,300 train / val / test
+        by case. 8,250 caption items (Anatomy 3,326, Tool 3,241, Action 1,683) and 2,689 Skill items
+        (Chole-Skill 1,684, LRYGB-Skill 1,005).</figcaption>
+    </figure>
+
+    <h3>The 13 question templates</h3>
+    <div class="table-wrap">
+      <table class="templates">
+        <thead><tr><th>ID</th><th>Category</th><th>Attribute</th><th>Example stem</th></tr></thead>
+        <tbody>
+          <tr><td>A1</td><td>Anatomy</td><td>presence</td><td>Is the omentum visible in both videos?</td></tr>
+          <tr><td>A2</td><td>Anatomy</td><td>colour</td><td>Is the gallbladder the same colour in both videos?</td></tr>
+          <tr><td>A4</td><td>Anatomy</td><td>position</td><td>Is the gallbladder in the same part of the view in both videos?</td></tr>
+          <tr><td>A6</td><td>Anatomy</td><td>state</td><td>Is the small bowel bleeding in both videos?</td></tr>
+          <tr><td>T1</td><td>Tool</td><td>presence</td><td>Is a hook used in both videos?</td></tr>
+          <tr><td>T3</td><td>Tool</td><td>entry side</td><td>Does the energy device enter from the same side in both videos?</td></tr>
+          <tr><td>T5</td><td>Tool</td><td>count</td><td>Do both videos show the same number of instruments engaging the stomach?</td></tr>
+          <tr><td>T6</td><td>Tool</td><td>engagement</td><td>Is the grasper actively engaged with the suture thread in both videos?</td></tr>
+          <tr><td>C1</td><td>Action</td><td>interaction</td><td>Is the same interaction with the tissue shown in both videos?</td></tr>
+          <tr><td>C2</td><td>Action</td><td>target part</td><td>Does a grasper hold the same part of the gallbladder in both videos?</td></tr>
+          <tr><td>C4</td><td>Action</td><td>goal</td><td>Is the surgeon pursuing the same goal in both videos?</td></tr>
+          <tr><td>S1</td><td>Skill</td><td>skill (CholeScore)</td><td>Is the cystic duct dissected to the same standard in both videos?</td></tr>
+          <tr><td>S2</td><td>Skill</td><td>skill (MultiBypass140)</td><td>Is two-handed coordination of the same standard in both videos?</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ metrics -->
+<section id="metrics">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Metrics</div>
+      <h2>Detecting a difference is not the same as specifying it</h2>
+      <p class="lede">The five relations group into <i>Same</i> = {same, neither} and <i>Different</i> = {different,
+        only 1, only 2}. Each source is scored with three metrics, reported as the mean over the four sources (4-source
+        macro). Every answer weighs the same, so collapsing to one answer scores low whichever answer it is.</p>
+    </div>
+    <div class="grid three">
+      <div class="card metric"><h4>Detect <span class="pill">macro-F1</span></h4>
+        <p>Macro-F1 of the Same / Different decision. It charges both missed differences and false alarms.</p></div>
+      <div class="card metric"><h4>Specify <span class="pill">accuracy</span></h4>
+        <p>Among items whose correct answer is Different <i>and</i> which the model also called Different, the share
+          where it picks the exact option: which video, which value, how much better. A source where the model calls
+          fewer than 20 items Different is excluded and marked (†).</p></div>
+      <div class="card metric"><h4>Strict <span class="pill">macro-F1</span></h4>
+        <p>Macro-F1 over exact answers, averaged over the answer classes of each question family and then over families.
+          For presence: {same, only 1, only 2, neither}; for skill: {better in 1, better in 2, same}.</p></div>
+    </div>
+    <div class="callout">
+      <p><b>Why not accuracy.</b> A model that always answers “the same” is rewarded by accuracy whenever differences
+        are rare, and models also exploit option position and wording. Strict weighs every exact answer equally within
+        each question family, so collapsing to one answer scores low, and Detect and Specify show where the remaining
+        errors come from.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ model -->
+<section id="model">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">EndoComparer</div>
+      <h2>Keep the two videos apart where they can be confused</h2>
+      <p class="lede">A Siamese vision encoder applies identical weights to both inputs and leaves the binding entirely
+        to the language model. EndoComparer separates the two videos in the visual pathway and in the reasoning.</p>
+    </div>
+
+    <figure class="figure">
+      <div class="frame"><img src="static/images/model.png" alt="EndoComparer architecture: two video slots pass through a shared frozen vision transformer and merger with slot-specific LoRA adapters, the language model reads the interleaved sequence, and the Perceive-then-Compare response states what each video shows before the letter."></div>
+      <figcaption><b>Overview.</b> Pseudo-Siamese Visual LoRA (left) routes each video’s tokens through its own low-rank
+        adapter over the shared frozen encoder and merger, in one packed, block-diagonal pass. The language model (middle)
+        carries a standard LoRA. Perceive-then-Compare CoT (right) emits two perception statements and then the letter.
+        Training swaps the video order with probability ½ and shuffles the options.</figcaption>
+    </figure>
+
+    <div class="grid two">
+      <div class="card">
+        <h3 style="margin-top:0">Pseudo-Siamese Visual LoRA</h3>
+        <p>For every frozen linear layer <i>W</i><sub>0</sub> of the visual pathway (the QKV and output projections and
+          the two MLP layers of each vision block, and the two merger layers), slot <i>k</i> ∈ {1, 2} gets its own
+          low-rank pair: <i>W<sub>k</sub></i> = <i>W</i><sub>0</sub> + (α/ρ) <i>B<sub>k</sub>A<sub>k</sub></i>.
+          The two branches share the frozen backbone and the architecture but not the adaptation.</p>
+        <p><b>Token-level slot routing.</b> Both videos are encoded in one packed sequence with a block-diagonal attention
+          mask. Each adapted layer routes a token to adapter 1 or 2 by its position in the sequence, so a single forward
+          pass computes exactly the two branches at the cost of one encoder pass.</p>
+        <p class="small muted" style="margin-bottom:0">Slot 2 is initialised from slot 1’s <i>A</i> with <i>B</i> = 0, so both branches
+          start from the backbone. Because slot is defined by position and the order is swapped during training, every
+          clip is seen by both branches.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Perceive-then-Compare CoT</h3>
+        <p>A comparative answer is a function of two single-video facts. The per-video facts from dataset construction
+          are rendered as short perception statements <i>h</i><sub>1</sub>, <i>h</i><sub>2</sub> (a presence state, an
+          instrument count, an attribute value or a score), and the target response chains them with the letter:</p>
+        <pre><code>Video 1: h1. Video 2: h2. (y*)</code></pre>
+        <p style="margin-top:12px">The likelihood factorises as <i>perceive</i> × <i>compare</i>:
+          <i>p</i>(<i>h</i><sub>1</sub> | x) · <i>p</i>(<i>h</i><sub>2</sub> | x, <i>h</i><sub>1</sub>) ·
+          <i>p</i>(<i>y</i>* | x, <i>h</i><sub>1</sub>, <i>h</i><sub>2</sub>), so the letter is conditioned on the
+          model’s own per-video statements, each grounded in the visual tokens of its own branch. Supervision comes from
+          the same facts the benchmark is built from, at no extra annotation cost.</p>
+        <p class="small muted" style="margin-bottom:0">At inference the model decodes greedily and the prediction is read from the final
+          parenthesised letter.</p>
+      </div>
+    </div>
+
+    <h3>Training</h3>
+    <p>Backbone Qwen3.5-9B. Vision, merger and language-model weights stay frozen; the two slot adapters (110 modules per
+      slot) and a language-model LoRA (rank 32, α = 64, dropout 0.05, on the attention, MLP and linear-recurrent
+      projections of all 32 layers) are trained together. Each training instance exchanges the two videos with
+      probability ½ (mapping the answer through the swap map) and shuffles the options. Loss: negative log-likelihood of
+      the response tokens only. AdamW, learning rate 10<sup>−4</sup>, cosine decay, 3 % warm-up, one epoch on
+      train + val at an effective batch of 16 on two H200 GPUs, about 3.5 h.</p>
+  </div>
+</section>
+
+<!-- ============================================================ results -->
+<section id="results">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Results</div>
+      <h2>EndoDiffVQA is hard for current VLMs</h2>
+      <p class="lede">All models receive the same input: 16 uniformly sampled frames per caption clip and 64 per skill
+        clip, at most 784 × 448 pixels, from one shared frame cache, followed by the question, the four lettered options
+        and the instruction. Decoding is greedy. Fine-tuned models are trained once on train + val for one epoch.</p>
+    </div>
+
+    <h3>Comparison with baselines</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">Model</th>
+            <th colspan="3" class="num">4-source macro</th>
+            <th colspan="4" class="num sep">Strict per subset</th>
+          </tr>
+          <tr>
+            <th class="num">Detect</th><th class="num">Specify</th><th class="num">Strict</th>
+            <th class="num sep">Chole-Cap</th><th class="num">LRYGB-Cap</th><th class="num">Chole-Skill</th><th class="num">LRYGB-Skill</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="group"><td colspan="8">Zero-shot</td></tr>
+          <tr><td>Qwen3.5-9B</td><td class="num">49.8</td><td class="num">57.3</td><td class="num">35.4</td><td class="num sep">41.3</td><td class="num">34.4</td><td class="num">31.6</td><td class="num">34.3</td></tr>
+          <tr><td>Qwen3.8-27B</td><td class="num">52.8</td><td class="num">58.9<span class="dag">†</span></td><td class="num">35.2</td><td class="num sep">38.7</td><td class="num">33.8</td><td class="num"><b>44.7</b></td><td class="num">23.6</td></tr>
+          <tr><td>InternVL3.5-8B</td><td class="num">49.7</td><td class="num">54.5<span class="dag">†</span></td><td class="num">30.6</td><td class="num sep">44.7</td><td class="num">25.5</td><td class="num">28.6</td><td class="num">23.6</td></tr>
+          <tr><td>InternVL3.5-30B</td><td class="num">56.6</td><td class="num">57.1</td><td class="num">37.2</td><td class="num sep">44.5</td><td class="num">32.0</td><td class="num">36.3</td><td class="num">36.1</td></tr>
+          <tr><td>SurgVidLM</td><td class="num">51.5</td><td class="num">49.2<span class="dag">†</span></td><td class="num">32.1</td><td class="num sep">32.5</td><td class="num">24.9</td><td class="num">39.2</td><td class="num">32.0</td></tr>
+          <tr><td>GPT-5.5</td><td class="num">49.5</td><td class="num">56.3</td><td class="num">32.9</td><td class="num sep">45.8</td><td class="num">25.9</td><td class="num">35.2</td><td class="num">24.7</td></tr>
+          <tr><td>Gemini 3.6 Flash</td><td class="num"><b>59.1</b></td><td class="num"><b>75.1</b></td><td class="num"><b>46.9</b></td><td class="num sep"><b>53.9</b></td><td class="num"><b>46.9</b></td><td class="num">43.1</td><td class="num"><b>43.7</b></td></tr>
+          <tr class="group"><td colspan="8">Fine-tuned on EndoDiffVQA</td></tr>
+          <tr><td>InternVL3.5-8B</td><td class="num">61.6</td><td class="num">85.3<span class="dag">†</span></td><td class="num">47.0</td><td class="num sep">66.3</td><td class="num">51.7</td><td class="num">46.4</td><td class="num">23.6</td></tr>
+          <tr><td>SurgVidLM</td><td class="num">60.0</td><td class="num">88.3<span class="dag">†</span></td><td class="num">45.1</td><td class="num sep">62.6</td><td class="num">52.2</td><td class="num">38.0</td><td class="num">27.5</td></tr>
+          <tr><td>SurgTEMP</td><td class="num">60.9</td><td class="num">88.9<span class="dag">†</span></td><td class="num">46.8</td><td class="num sep">64.3</td><td class="num">52.9</td><td class="num">42.6</td><td class="num">27.5</td></tr>
+          <tr><td>SurgViVQA</td><td class="num">52.4</td><td class="num">37.5</td><td class="num">32.6</td><td class="num sep">32.9</td><td class="num">33.1</td><td class="num">36.9</td><td class="num">27.4</td></tr>
+          <tr><td>PeskaVLP</td><td class="num">61.3</td><td class="num">63.3<span class="dag">†</span></td><td class="num">44.6</td><td class="num sep">53.9</td><td class="num">44.8</td><td class="num">47.7</td><td class="num">31.9</td></tr>
+          <tr><td>SurgCLIP</td><td class="num">61.4</td><td class="num">57.3</td><td class="num">43.5</td><td class="num sep">54.0</td><td class="num">45.4</td><td class="num">47.5</td><td class="num">27.2</td></tr>
+          <tr><td>Qwen3.5-9B (backbone)</td><td class="num">63.6</td><td class="num">77.6</td><td class="num">48.3</td><td class="num sep">64.6</td><td class="num">49.4</td><td class="num">43.3</td><td class="num">31.1</td></tr>
+          <tr><td>&nbsp;&nbsp;w/o PSVL (PtC-CoT only)</td><td class="num">64.0</td><td class="num">78.0</td><td class="num">49.5</td><td class="num sep">65.3</td><td class="num">51.6</td><td class="num">44.9</td><td class="num">33.4</td></tr>
+          <tr><td>&nbsp;&nbsp;w/o PtC-CoT (PSVL only)</td><td class="num">65.6</td><td class="num">80.3</td><td class="num">50.9</td><td class="num sep">68.3</td><td class="num">52.5</td><td class="num">43.3</td><td class="num">32.6</td></tr>
+          <tr class="ours"><td>EndoComparer (ours)</td><td class="num"><b>67.1</b></td><td class="num"><b>82.0</b></td><td class="num"><b>52.5</b></td><td class="num sep"><b>69.6</b></td><td class="num"><b>54.4</b></td><td class="num"><b>51.9</b></td><td class="num"><b>38.9</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">EndoDiffVQA test split, 2,300 items, %. Detect, Specify and Strict are 4-source macros; the last
+      four columns give Strict per subset. † Specify macro over fewer than four subsets because the model called fewer
+      than 20 items Different in the others; not highlighted. Best per group in bold.</p>
+
+    <div class="grid two" style="margin-top:22px">
+      <div class="card">
+        <h4>What the table shows</h4>
+        <p>Zero-shot, open models reach only 30.6–37.2 Strict, and the surgical VLMs score below the general ones.
+          Gemini 3.6 Flash is the strongest zero-shot model (46.9), close to the fine-tuned Qwen3.5-9B (48.3). Fine-tuning
+          raises Strict by 13–19 points, but the gain comes from the caption subsets: on LRYGB-Skill the fine-tuned
+          models stay at 23.6–31.9, no better than zero-shot.</p>
+        <p>EndoComparer is best on every column of its group except Specify. It improves over its fine-tuned backbone by
+          3.5 Detect, 4.4 Specify and 4.2 Strict, and over Gemini 3.6 Flash by 5.6 Strict, with the largest gains on the
+          skill subsets (+8.6 and +7.8 Strict on Chole-Skill and LRYGB-Skill).</p>
+      </div>
+      <div class="card">
+        <h4>Ablation: the two components are complementary</h4>
+        <p>Starting from the fine-tuned backbone (Siamese vision LoRA, letter-only target), PtC-CoT alone adds 1.2 Strict
+          and PSVL alone adds 2.6, the latter almost entirely on the caption subsets. Together they add 4.2, and the gain
+          on skill is larger than either gives alone: Chole-Skill rises from 44.9 and 43.3 to 51.9, LRYGB-Skill from
+          33.4 and 32.6 to 38.9. The per-video statements of PtC-CoT are most useful when each statement comes from its
+          own visual branch.</p>
+      </div>
+    </div>
+
+    <h3>Robustness to video order</h3>
+    <p>The swap control re-evaluates the test items with Video 1 and Video 2 exchanged, scored against the swapped answer.
+      A confused answer follows the position of a video rather than its content, so it is right in one order and wrong
+      in the other, and the drop in Strict counts these answers.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th rowspan="2"></th><th colspan="3" class="num">Zero-shot</th><th colspan="6" class="num sep">Fine-tuned</th></tr>
+          <tr>
+            <th class="num">Qwen3.8-27B</th><th class="num">InternVL3.5-30B</th><th class="num">SurgVidLM</th>
+            <th class="num sep">InternVL3.5-8B</th><th class="num">SurgVidLM</th><th class="num">SurgTEMP</th><th class="num">SurgViVQA</th><th class="num">Qwen3.5-9B</th><th class="num">EndoComparer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Full</td><td class="num">35.2</td><td class="num">37.2</td><td class="num">32.1</td><td class="num sep">47.0</td><td class="num">45.1</td><td class="num">46.8</td><td class="num">32.6</td><td class="num">48.3</td><td class="num"><b>52.5</b></td></tr>
+          <tr><td>Swap</td><td class="num">33.1</td><td class="num">34.5</td><td class="num">27.8</td><td class="num sep">41.6</td><td class="num">38.3</td><td class="num">39.2</td><td class="num">30.4</td><td class="num">42.5</td><td class="num"><b>51.9</b></td></tr>
+          <tr><td>Δ</td><td class="num">−2.1</td><td class="num">−2.7</td><td class="num">−4.3</td><td class="num sep">−5.4</td><td class="num">−6.8</td><td class="num">−7.6</td><td class="num">−2.2</td><td class="num">−5.8</td><td class="num"><b>−0.6</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">Strict on the test split, %, 4-source macro. <i>Full</i> is the release order; <i>Swap</i>
+      exchanges Video 1 and Video 2 and scores against the swapped answer. The fine-tuned letter-target VLMs lose 5–8
+      points: they perceive the difference and attach it to the wrong video. EndoComparer loses 0.6, and its share of
+      asymmetric items answered correctly in both orders rises from 25.9 % for its backbone to 55.2 %.</p>
+  </div>
+</section>
+
+<!-- ============================================================ release -->
+<section id="release">
+  <div class="wrap release">
+    <div class="section-head">
+      <div class="kicker">Release</div>
+      <h2>Code, data and models</h2>
+      <p class="lede">Everything needed to reproduce the benchmark numbers and train EndoComparer will live in the
+        <a href="https://github.com/CAMMA-public/endocomparer">CAMMA-public/endocomparer</a> repository.</p>
+    </div>
+    <div class="grid three">
+      <div class="card">
+        <h4>EndoDiffVQA <span class="status live">dataset</span></h4>
+        <p>10,939 items with videos and train / val / test parquet splits, hosted on the Hugging Face Hub
+          under an access gate. Scoring code for Detect, Specify and Strict ships with the repository.</p>
+        <p><a href="https://huggingface.co/datasets/ethanshili/EndoDiffVQA">Hugging Face dataset →</a></p>
+      </div>
+      <div class="card">
+        <h4>EndoComparer <span class="status todo">coming soon</span></h4>
+        <p>Pseudo-Siamese Visual LoRA on Qwen3.5-9B, Perceive-then-Compare targets, training and inference scripts, and
+          the evaluation harness used for every baseline in the table above.</p>
+      </div>
+      <div class="card">
+        <h4>Checkpoints <span class="status todo">coming soon</span></h4>
+        <p>The released adapters: two slot adapters for the visual pathway and the language-model LoRA, loadable on top of
+          the public Qwen3.5-9B weights.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ bibtex -->
+<section id="bibtex">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Citation</div>
+      <h2>BibTeX</h2>
+    </div>
+    <div class="bib">
+      <button type="button" id="copy-bib">Copy</button>
+<pre><code id="bibtex">@article{li2026endocomparer,
+  title   = {EndoComparer: Comparative Surgical Video Question Answering with
+             Pseudo-Siamese Visual Adaptation and Perceive-then-Compare Reasoning},
+  author  = {Li, Shi and Sharan, Lalith and Lavanchy, Jo{\"e}l L. and Yuan, Kun and
+             Arboit, Lorenzo and Banik, Nabani and Yazici, Elif and Vannucci, Maria and
+             Srivastav, Vinkle and Mascagni, Pietro and Padoy, Nicolas},
+  year    = {2026}
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <div>
+        <b>CAMMA</b> · Computational Analysis and Modeling of Medical Activities<br>
+        <a href="https://camma.unistra.fr/">camma.unistra.fr</a> · University of Strasbourg · IHU Strasbourg
+      </div>
+      <div>
+        Built on <a href="https://github.com/CAMMA-public/cholect50">CholecT50</a>, <a href="https://github.com/CAMMA-public/MultiBypass140">MultiBypass140</a> and CholeScore.
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="static/js/main.js"></script>
+</body>
+</html>

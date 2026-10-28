@@ -1,0 +1,74 @@
+# EndoComparer
+
+**Comparative Surgical Video Question Answering with Pseudo-Siamese Visual Adaptation and Perceive-then-Compare Reasoning**
+
+Shi Li, Lalith Sharan, Joël L. Lavanchy, Kun Yuan, Lorenzo Arboit, Nabani Banik, Elif Yazici, Maria Vannucci,
+Vinkle Srivastav, Pietro Mascagni, Nicolas Padoy
+
+[Project page](https://camma-public.github.io/endocomparer/) · Paper (soon) · [Dataset](https://huggingface.co/datasets/ethanshili/EndoDiffVQA) · Models (soon)
+
+Surgical assessment is comparative, but vision-language models see one video at a time. This repository holds
+
+- **EndoDiffVQA**, a benchmark of 10,939 two-video, four-option questions over laparoscopic cholecystectomy and
+  Roux-en-Y gastric bypass (Anatomy, Tool, Action, Skill), scored with hierarchical **Detect / Specify / Strict** metrics;
+- **EndoComparer**, a VLM that keeps the two videos apart in the visual encoder (Pseudo-Siamese Visual LoRA) and in the
+  reasoning (Perceive-then-Compare chain of thought).
+
+## Status
+
+| Component | Status |
+|---|---|
+| Project page (`docs/`) | ready |
+| EndoDiffVQA data (Hugging Face, gated) | published |
+| Evaluation harness and metrics (`endodiffvqa/`) | to be released |
+| EndoComparer model, training and inference (`endocomparer/`) | to be released |
+| Checkpoints | to be released |
+
+## Repository layout
+
+```
+.
+├── docs/            # project page, served by GitHub Pages from main:/docs (static HTML, no build step)
+├── endodiffvqa/     # benchmark: release loader, Detect / Specify / Strict metrics, swap control
+├── endocomparer/    # model: Pseudo-Siamese Visual LoRA, Perceive-then-Compare targets, training, inference
+├── configs/         # training / evaluation configs
+├── scripts/         # entry points (train, evaluate, score)
+└── README.md
+```
+
+Each code directory carries a `README.md` describing what will land there.
+
+## Project page
+
+`docs/index.html` is a self-contained static page (one stylesheet, one script, images under `docs/static/`). To preview
+locally:
+
+```bash
+python -m http.server --directory docs 8000
+# open http://localhost:8000
+```
+
+On GitHub, enable Pages with source **Deploy from a branch → `main` / `docs`**. The `.nojekyll` file disables Jekyll
+processing.
+
+## Citation
+
+```bibtex
+@article{li2026endocomparer,
+  title   = {EndoComparer: Comparative Surgical Video Question Answering with
+             Pseudo-Siamese Visual Adaptation and Perceive-then-Compare Reasoning},
+  author  = {Li, Shi and Sharan, Lalith and Lavanchy, Jo{\"e}l L. and Yuan, Kun and
+             Arboit, Lorenzo and Banik, Nabani and Yazici, Elif and Vannucci, Maria and
+             Srivastav, Vinkle and Mascagni, Pietro and Padoy, Nicolas},
+  year    = {2026}
+}
+```
+
+## License
+
+To be added before the code release.
+
+## Acknowledgements
+
+EndoDiffVQA is built on [CholecT50](https://github.com/CAMMA-public/cholect50),
+[MultiBypass140](https://github.com/CAMMA-public/MultiBypass140) and CholeScore. EndoComparer builds on Qwen3.5-9B.
