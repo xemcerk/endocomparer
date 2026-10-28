@@ -18,7 +18,6 @@ Surgical assessment is comparative, but vision-language models see one video at 
 
 | Component | Status |
 |---|---|
-| Project page (`docs/`) | ready |
 | EndoDiffVQA data (Hugging Face, gated) | published |
 | Evaluation harness and metrics (`endodiffvqa/`) | to be released |
 | EndoComparer model, training and inference (`endocomparer/`) | to be released |
@@ -38,31 +37,9 @@ Surgical assessment is comparative, but vision-language models see one video at 
 
 Each code directory carries a `README.md` describing what will land there.
 
-## Project page
-
-`docs/index.html` is a self-contained static page (one stylesheet, one script, images under `docs/static/`). To preview
-locally:
-
-```bash
-python -m http.server --directory docs 8000
-# open http://localhost:8000
-```
-
-On GitHub, enable Pages with source **Deploy from a branch → `main` / `docs`**. The `.nojekyll` file disables Jekyll
-processing.
-
 ## Citation
 
-```bibtex
-@article{li2026endocomparer,
-  title   = {EndoComparer: Comparative Surgical Video Question Answering with
-             Pseudo-Siamese Visual Adaptation and Perceive-then-Compare Reasoning},
-  author  = {Li, Shi and Sharan, Lalith and Lavanchy, Jo{\"e}l L. and Yuan, Kun and
-             Arboit, Lorenzo and Banik, Nabani and Yazici, Elif and Vannucci, Maria and
-             Srivastav, Vinkle and Mascagni, Pietro and Padoy, Nicolas},
-  year    = {2026}
-}
-```
+To be added.
 
 ## License
 
