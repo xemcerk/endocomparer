@@ -8,7 +8,7 @@
 <h2 align="center">EndoComparer: Comparative Surgical Video Question Answering with<br>Pseudo-Siamese Visual Adaptation and Perceive-then-Compare Reasoning</h2>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Paper-Coming%20Soon-lightgrey">
+  <a href="https://arxiv.org/abs/2611.19578" target="_blank"><img src="https://img.shields.io/badge/arXiv-2611.19578-b31b1b"></a>
   <a href="https://camma-public.github.io/endocomparer/" target="_blank"><img src="https://img.shields.io/badge/Project-Page-brightgreen"></a>
   <a href="https://huggingface.co/ethanshili/EndoComparer" target="_blank"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-blue"></a>
   <img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset%20(Coming%20Soon)-orange">
@@ -27,6 +27,7 @@
 
 ## 🔥 News
 
+- **[2026.11.17]** 📄 Paper is out on [arXiv](https://arxiv.org/abs/2611.19578).
 - **[2026.11.04]** ⭐️ Code and model release.
 
 ## 🕹️ Quick start
@@ -82,7 +83,16 @@ Runs EndoComparer on the test split with the shared frame protocol and writes De
 
 ## Citation
 
-To be added.
+If you find EndoComparer or EndoDiffVQA useful, please cite:
+
+```bibtex
+@article{li2026endocomparer,
+  title   = {EndoComparer: Comparative Surgical Video Question Answering with Pseudo-Siamese Visual Adaptation and Perceive-then-Compare Reasoning},
+  author  = {Li, Shi and Sharan, Lalith and Lavanchy, Jo{\"e}l L. and Yuan, Kun and Arboit, Lorenzo and Banik, Nabani and Yazici, Elif and Vannucci, Maria and Srivastav, Vinkle and Mascagni, Pietro and Padoy, Nicolas},
+  journal = {arXiv preprint arXiv:2611.19578},
+  year    = {2026}
+}
+```
 
 ## License
 
@@ -93,3 +103,5 @@ This repository is released under the Creative Commons Attribution-NonCommercial
 EndoDiffVQA is built on [CholecT50](https://github.com/CAMMA-public/cholect50),
 [MultiBypass140](https://github.com/CAMMA-public/MultiBypass140) and [CholeScore](https://github.com/CAMMA-public/cholescore). EndoComparer builds on
 [Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B).
+
+This work has received funding from the European Union (ERC, CompSURG, 101088553). Views and opinions expressed are however those of the authors only and do not necessarily reflect those of the European Union or the European Research Council. Neither the European Union nor the granting authority can be held responsible for them. This work was also partially supported by French state funds managed by the ANR under Grant ANR-10-IAHU-02 (IHU Strasbourg) and by the Interdisciplinary Thematic Institute HealthTech (ITI 2021-2028 program of the University of Strasbourg, CNRS and Inserm) via the IdEx Unistra (ANR-10-IDEX-0002) and SFRI (STRATUS project, ANR-20-SFRI-0012). This work was also granted access to the servers/HPC resources managed by CAMMA, IHU Strasbourg and Unistra Mesocentre.
